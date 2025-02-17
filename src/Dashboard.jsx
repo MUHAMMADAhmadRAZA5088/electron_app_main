@@ -17,7 +17,7 @@ import { useCallback } from 'react';
 import debounce from 'lodash/debounce';
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://203.161.50.28:5001/api';
 
 const createDebouncedUpdate = (updateFn) => {
   return debounce(updateFn, 5000, { maxWait: 5000 });
@@ -426,7 +426,7 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
     useEffect(() => {
       const fetchCollections = async () => {
         try {
-          const response = await fetch(`http://localhost:5001/api/collections/${userId}`);
+          const response = await fetch(`http://203.161.50.28:5001/api/collections/${userId}`);
           const data = await response.json();
           if (data.success) {
             setCollections(data.collections);
@@ -444,7 +444,7 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
     // Update createNewFolder function
     const createNewFolder = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/collections', {
+        const response = await fetch('http://203.161.50.28:5001/api/collections', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -474,7 +474,7 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
     // Update createNewApi function
     const createNewApi = async (folderId) => {
       try {
-        const response = await fetch('http://localhost:5001/api/apis', {
+        const response = await fetch('http://203.161.50.28:5001/api/apis', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -532,7 +532,7 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
       try {
         if (apiId) {
           // Delete API
-          const response = await fetch(`http://localhost:5001/api/apis/${apiId}`, {
+          const response = await fetch(`http://203.161.50.28:5001/api/apis/${apiId}`, {
             method: 'DELETE',
           });
           
@@ -554,7 +554,7 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
           }
         } else {
           // Delete Collection
-          const response = await fetch(`http://localhost:5001/api/collections/${folderId}`, {
+          const response = await fetch(`http://203.161.50.28:5001/api/collections/${folderId}`, {
             method: 'DELETE',
           });
           
@@ -574,7 +574,7 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
     const debouncedUpdateApi = useCallback(
       createDebouncedUpdate(async (folderId, apiId, updatedData) => {
         try {
-          const response = await fetch(`http://localhost:5001/api/apis/${apiId}`, {
+          const response = await fetch(`http://203.161.50.28:5001/api/apis/${apiId}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -669,11 +669,9 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
           }
       
           try {
-            const response = await fetch('http://localhost:5000/api/proxy', {
+            const response = await fetch('http://203.161.50.28:5000/api/proxy', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
+              
               body: JSON.stringify(proxyRequest)
             });
       
@@ -724,7 +722,7 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
       
             // Save request history to database
             try {
-              await fetch('http://localhost:5001/api/request-history', {
+              await fetch('http://203.161.50.28:5001/api/request-history', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
@@ -784,7 +782,7 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
       
             // Save network error history to database
             try {
-              await fetch('http://localhost:5001/api/request-history', {
+              await fetch('http://203.161.50.28:5001/api/request-history', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'

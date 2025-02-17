@@ -13,7 +13,7 @@ const RequestHistoryPanel = ({ collections = [] }) => {
 
       setIsLoading(true);
       try {
-        const response = await fetch(`http://localhost:5001/api/request-history/${userId}`);
+        const response = await fetch(`http://203.161.50.28:5001/api/request-history/${userId}`);
         const data = await response.json();
         
         if (data.success) {

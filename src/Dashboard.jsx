@@ -16,6 +16,7 @@ import EnvironmentManagementPanel from './EnvironmentManager';
 import { useCallback } from 'react';
 import debounce from 'lodash/debounce';
 import axios from 'axios';
+import {useNavigate} from "react-router-dom";
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://203.161.50.28:5001/api';
 
@@ -47,6 +48,7 @@ const App = () => {
   const [isRightSidebarCollapsed, setIsRightSidebarCollapsed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [activeRightSection, setActiveRightSection] = useState('code');
+  const navigate = useNavigate ();
 
   const [isMobile, setIsMobile] = useState(false);
   const [userId, setUserId] = useState(localStorage.getItem('userId'));
@@ -440,6 +442,12 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
         fetchCollections();
       }
     }, [userId]);
+
+    const handleSignOut = () => {
+      localStorage.removeItem('userId');
+      localStorage.removeItem('user');
+      navigate('/');
+    }
     
     // Update createNewFolder function
     const createNewFolder = async () => {
@@ -630,16 +638,37 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
       
         updateApiState(activeFolderId, activeApiId, {
           isLoading: true,
-          responseData: null // Clear previous response while loading
+          responseData: null
         });
         
         try {
+          // Properly structure the body based on bodyType
+          let processedBody = null;
+          if (api.body.type === 'raw') {
+            processedBody = {
+              type: 'raw',
+              content: typeof api.body.content === 'string' 
+                ? api.body.content 
+                : JSON.stringify(api.body.content)
+            };
+          } else if (api.body.type === 'formData') {
+            processedBody = {
+              type: 'formData',
+              formData: Array.isArray(api.body.formData) ? api.body.formData : []
+            };
+          } else if (api.body.type === 'urlencoded') {
+            processedBody = {
+              type: 'urlencoded',
+              urlencoded: Array.isArray(api.body.urlencoded) ? api.body.urlencoded : []
+            };
+          }
+      
           const proxyRequest = {
             method: api.method,
             url: api.url,
-            headers: [...api.headers],
+            headers: Array.isArray(api.headers) ? [...api.headers] : [],
             bodyType: api.body.type,
-            body: api.body,
+            body: processedBody,
             settings: {
               followRedirects: api.settings?.followRedirects ?? true,
               timeout: api.settings?.timeout ?? 0,
@@ -655,7 +684,7 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
             }
           };
       
-          // Handle authentication
+          // Add authentication headers if needed
           if (api.auth.type === 'config-jwt' && api.auth.jwt?.key && api.auth.jwt?.value) {
             proxyRequest.headers.push({
               key: api.auth.jwt.key,
@@ -669,10 +698,16 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
           }
       
           try {
+            // Ensure the request body is properly stringified
+            const stringifiedBody = JSON.stringify(proxyRequest);
+            
             const response = await fetch('http://203.161.50.28:5000/api/proxy', {
               method: 'POST',
-              
-              body: JSON.stringify(proxyRequest)
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: stringifiedBody
             });
       
             const endTime = performance.now();
@@ -699,7 +734,7 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
               folderName: collections.find(f => f.id === activeFolderId)?.name || 'Unnamed Folder',
               requestDetails: {
                 headers: api.headers,
-                body: api.body,
+                body: processedBody, // Use the processed body here too
                 queryParams: api.queryParams,
                 auth: api.auth
               },
@@ -707,12 +742,10 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
                 headers: Object.fromEntries(response.headers),
                 body: responseData
               },
-              errorContext: null // Will be populated for error responses
+              errorContext: null
             };
       
-            // Handle different status code scenarios
             if (!response.ok) {
-              // For error responses (4xx, 5xx)
               requestMetrics.errorContext = {
                 type: response.status >= 500 ? 'Server Error' : 'Client Error',
                 message: responseData?.message || 'Unknown error occurred',
@@ -720,7 +753,7 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
               };
             }
       
-            // Save request history to database
+            // Save request history
             try {
               await fetch('http://203.161.50.28:5001/api/request-history', {
                 method: 'POST',
@@ -2369,6 +2402,12 @@ return (
               className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               {isDarkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5  text-blue-400" />}
+            </button>
+            <button
+            onClick={handleSignOut}
+            className="p-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-md flex items-center"
+            >
+              Sign Out
             </button>
           </div>
         </div>

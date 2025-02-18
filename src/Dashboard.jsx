@@ -769,6 +769,7 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
             // Update local state
             updateApiState(activeFolderId, activeApiId, {
               isLoading: false,
+              activeResponseTab: 'response-body',
               responseData: {
                 ...responseData,
                 status: response.status,
@@ -829,6 +830,7 @@ const FooterButton = ({ icon: Icon, label, onClick }) => (
             // Update local state for network error
             updateApiState(activeFolderId, activeApiId, {
               isLoading: false,
+              activeResponseTab: 'response-body',
               responseData: {
                 error: networkError.message,
                 status: 0,
